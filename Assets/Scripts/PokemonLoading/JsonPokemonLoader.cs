@@ -32,6 +32,27 @@ namespace Assets.Scripts
             return thePokemon;
         }
 
+        public Sprite GetPokemonSprite(string id)
+        {
+            string appPath = Application.dataPath;
+            string spriteFilePath = appPath + "/Resources/Images/" + id + ".png";
+
+            byte[] fileData = File.ReadAllBytes(spriteFilePath);
+
+            Texture2D pokemonTexture = new Texture2D(2, 2);
+            pokemonTexture.LoadImage(fileData);
+
+            if (pokemonTexture == null)
+            {
+                Debug.LogError("Could not load sprite texture at path: " + spriteFilePath);
+                return null;
+            }
+
+            Sprite sprite = Sprite.Create(pokemonTexture, new Rect(0, 0, pokemonTexture.width, pokemonTexture.height), Vector2.zero);
+
+            return sprite;
+        }
+
         private BasePokemon CreatePokemonFromData(JsonPokemonData data, string id)
         {
             BasePokemon pokemon = new BasePokemon();

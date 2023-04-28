@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +9,14 @@ public class ChoosePokemon : MonoBehaviour
 {
     [SerializeField] GameObject pokemonPanelPrefab;
     [SerializeField] TextMeshProUGUI descriptionText;
+    [SerializeField] TextMeshProUGUI nameText;
 
-    public void GeneratePokemonPanels(List<BasePokemon> allPokemon)
+    private BasePokemon currentPokemon;
+
+    public delegate void PokemonChosen(BasePokemon pokemon);
+    public PokemonChosen onPokemonChosen;
+
+    public void GeneratePokemonPanels(List<BasePokemon> allPokemon, JsonPokemonLoader loader)
     {
         RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -24,7 +31,7 @@ public class ChoosePokemon : MonoBehaviour
             panel.transform.position = panelPosition;
 
             PokemonPanel pokemonPanel = panel.GetComponent<PokemonPanel>();
-            Sprite sprite = getPokemonSprite(pokemon.Id);
+            Sprite sprite = loader.GetPokemonSprite(pokemon.Id);
 
             pokemonPanel.SetCanvas(this);
             pokemonPanel.SetPokemonData(pokemon);
@@ -33,29 +40,30 @@ public class ChoosePokemon : MonoBehaviour
         }
     }
 
-    public void SetDescription(string text)
+    public void SelectPokemon()
+    {
+        if (currentPokemon != null)
+        {
+            onPokemonChosen?.Invoke(currentPokemon);
+
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void SetCurrentPokemon(BasePokemon pokemon)
+    {
+        currentPokemon = pokemon;
+        SetDescription(currentPokemon.Description);
+        SetName(currentPokemon.Name);
+    }
+
+    private void SetDescription(string text)
     {
         descriptionText.text = text;
     }
 
-    private Sprite getPokemonSprite(string id)
+    private void SetName(string text)
     {
-        string appPath = Application.dataPath;
-        string spriteFilePath = appPath + "/Resources/Images/" + id + ".png";
-
-        byte[] fileData = File.ReadAllBytes(spriteFilePath);
-
-        Texture2D pokemonTexture = new Texture2D(2, 2);
-        pokemonTexture.LoadImage(fileData);
-        
-        if (pokemonTexture == null)
-        {
-            Debug.LogError("Could not load sprite texture at path: " + spriteFilePath);
-            return null;
-        }
-        
-        Sprite sprite = Sprite.Create(pokemonTexture, new Rect(0, 0, pokemonTexture.width, pokemonTexture.height), Vector2.zero);
-
-        return sprite;
+        nameText.text = text;
     }
 }

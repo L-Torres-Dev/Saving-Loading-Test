@@ -30,6 +30,6 @@ public class PokemonPanel : MonoBehaviour
 
     public void OnClick()
     {
-        choosePokemonCanvas.SetDescription(pokemonData.Description);
+        choosePokemonCanvas.SetCurrentPokemon(pokemonData);
     }
 }

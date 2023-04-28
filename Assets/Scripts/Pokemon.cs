@@ -1,25 +1,32 @@
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class BasePokemon
+namespace Assets.Scripts
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public float BaseHealth { get; set; }
-    public float BaseAttack { get; set; }
-    public float BaseDefense { get; set; }
-    public float BaseSpecialAttack { get; set; }
-    public float BaseSpecialDefense{ get; set; }
-    public float BaseSpeed { get; set; }
-
-    public override string ToString()
+    public class Pokemon
     {
-        string toString = string.Format("Id: {0}\nName: {1}\nDescription: {2}\nHealth: {3}\nAttack: {4}\nDefense: {5}\n" +
-            "Special Attack: {6}\nSpecial Defense: {7}\nSpeed: {8}",
-            Id, Name, Description, BaseHealth, BaseAttack, BaseDefense, BaseSpecialAttack, BaseSpecialDefense,
-            BaseSpeed);
-        return toString;
+        public float Health { get; set; }
+        public float Attack { get; set; }
+        public float Defense { get; set; }
+        public float SpecialAttack { get; set; }
+        public float SpecialDefense { get; set; }
+        public float Speed { get; set; }
+
+        public BasePokemon BaseStats { get; private set; }
+        
+        public Pokemon(BasePokemon baseData)
+        {
+            Health = baseData.BaseHealth;
+            Attack = baseData.BaseAttack;
+            Defense = baseData.BaseDefense;
+            SpecialAttack = baseData.BaseSpecialAttack;
+            SpecialDefense = baseData.BaseSpecialDefense;
+            Speed = baseData.BaseSpeed;
+
+            BaseStats = baseData;
+        }
     }
 }
