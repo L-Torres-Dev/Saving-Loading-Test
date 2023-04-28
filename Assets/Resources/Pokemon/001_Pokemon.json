@@ -1,0 +1,10 @@
+{
+    "name": "Bulbasaur",
+    "description": "There is a plant seed on its back right from the day this Pokémon is born. The seed slowly grows larger.",
+    "health": 45,
+    "attack": 49,
+    "defense": 49,
+    "specialAttack": 65,
+    "specialDefense": 65,
+    "speed": 45
+}

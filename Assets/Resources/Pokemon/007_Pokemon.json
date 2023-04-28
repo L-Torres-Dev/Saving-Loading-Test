@@ -1,0 +1,10 @@
+{
+    "name": "Squirtle",
+    "description": "When it retracts its long neck into its shell, it squirts out water with vigorous force.",
+    "health": 44,
+    "attack": 48,
+    "defense": 65,
+    "specialAttack": 50,
+    "specialDefense": 64,
+    "speed": 43
+}
