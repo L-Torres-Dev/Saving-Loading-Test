@@ -20,6 +20,9 @@ public class StatsCanvas : MonoBehaviour
     public ChangePokemonStat onIncrementSpecialDefense;
     public ChangePokemonStat onIncrementSpeed;
 
+    public delegate void SaveRequest();
+    public SaveRequest onRequestSave;
+
     public void SetPokemonStatUI(Pokemon pokemon)
     {
         hpStat.text = pokemon.Health.ToString();
@@ -58,6 +61,11 @@ public class StatsCanvas : MonoBehaviour
     public void incrementSpeed()
     {
         onIncrementSpeed?.Invoke(1);
+    }
+
+    public void RequestSave()
+    {
+        onRequestSave?.Invoke();
     }
 
     public void SetPanel(BasePokemon pokemon, Sprite sprite)
