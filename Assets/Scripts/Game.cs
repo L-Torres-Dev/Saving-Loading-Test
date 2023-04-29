@@ -30,11 +30,6 @@ namespace Assets.Scripts
 
         public void Save()
         {
-            SavePokemon();
-        }
-
-        private void SavePokemon()
-        {
             serializer.Save();
         }
 
