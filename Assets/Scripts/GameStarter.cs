@@ -1,89 +1,80 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 using Assets.Scripts;
 using System.Linq;
+using Assets.Scripts.SerializationScripts;
 
 public class GameStarter : MonoBehaviour
 {
     [SerializeField] ChoosePokemon chooser;
     [SerializeField] StatsCanvas statsCanvas;
-    JsonPokemonLoader loader;
+    [SerializeField] MainMenu mainMenu;
+    JsonPokemonLoader dbLoader;
     List<BasePokemon> allPokemon;
 
-    
+    private IDeSerializer deserializer;
     void Awake()
     {
-        loader = new JsonPokemonLoader();
+        dbLoader = new JsonPokemonLoader();
         allPokemon = new List<BasePokemon>();
-        allPokemon = loader.LoadAllPokemon();
+        allPokemon = dbLoader.LoadAllPokemon();
 
-        if (File.Exists(Application.persistentDataPath + "/gamestate.dat"))
+        deserializer = new SimpleDeserializer();
+
+        if (!deserializer.FileExists())
         {
-            print("File Exists");
-            chooser.gameObject.SetActive(false);
-
-            FileStream fileStream = File.Open(Application.persistentDataPath + "/gamestate.dat", FileMode.Open);
-            BinaryReader reader = new BinaryReader(fileStream);
-
-            string id = reader.ReadString();
-            string name = reader.ReadString();
-            float health = reader.ReadSingle();
-            float attack = reader.ReadSingle();
-            float defense = reader.ReadSingle();
-            float specialAttack = reader.ReadSingle();
-            float specialDefense = reader.ReadSingle();
-            float speed = reader.ReadSingle();
-
-            BasePokemon baseStats = allPokemon.Where(baseStat => baseStat.Id.Equals(id)).FirstOrDefault();
-
-            Pokemon pokemon = new Pokemon(baseStats);
-            print("Loaded Pokemon Base Stats: " + pokemon.ToString());
-
-            pokemon.Health = health;
-            pokemon.Attack = attack;
-            pokemon.Defense = defense;
-            pokemon.SpecialAttack = specialAttack;
-            pokemon.SpecialDefense = specialDefense;
-            pokemon.Speed = speed;
-
-            print("Loaded Pokemon saved Stats: " + pokemon.ToString());
-
-            LoadGame(pokemon);
+            mainMenu.DeactivateContinue();
         }
-
-        else
-        {
-            chooser.GeneratePokemonPanels(allPokemon, loader);
-        }
-         
-
-        
     }
 
     private void Start()
     {
-        chooser.onPokemonChosen += NewGame;
+        chooser.onPokemonChosen += BeginNewGame;
+        mainMenu.onContinue += LoadGame;
+        mainMenu.onNewGame += NewGame;
     }
 
-    private void LoadGame(Pokemon pokemon)
+    private Pokemon InitObjectsFromData(DeserializedData data)
     {
+        BasePokemon baseStats = allPokemon.Where(baseStat => baseStat.Id.Equals(data.Id)).FirstOrDefault();
+
+        Pokemon pokemon = new Pokemon(baseStats);
+
+        pokemon.Health = data.Health;
+        pokemon.Attack = data.Attack;
+        pokemon.Defense = data.Defense;
+        pokemon.SpecialAttack = data.SpecialAttack;
+        pokemon.SpecialDefense = data.SpecialDefense;
+        pokemon.Speed = data.Speed;
+
+        return pokemon;
+    }
+
+    private void LoadGame()
+    {
+        DeserializedData data = deserializer.Load();
+        Pokemon pokemon = InitObjectsFromData(data);
         statsCanvas.gameObject.SetActive(true);
 
-        Game game = new Game();
+        Game game = new Game(new SimpleSerializer(pokemon));
         game.SetPlayerPokemon(pokemon);
         SetupStatsCanvas(pokemon, game);
     }
 
-    private void NewGame(BasePokemon baseStarter)
+    private void NewGame()
     {
-        chooser.onPokemonChosen -= NewGame;
+        chooser.gameObject.SetActive(true);
+        chooser.GeneratePokemonPanels(allPokemon, dbLoader);
+    }
+
+    private void BeginNewGame(BasePokemon baseStarter)
+    {
+        chooser.onPokemonChosen -= BeginNewGame;
 
         statsCanvas.gameObject.SetActive(true);
 
         Pokemon starter = new Pokemon(baseStarter);
-        Game game = new Game(starter);
+        Game game = new Game(starter, new SimpleSerializer(starter));
         SetupStatsCanvas(starter, game);
 
     }
@@ -92,7 +83,7 @@ public class GameStarter : MonoBehaviour
     {
         BasePokemon baseStarter = starter.BaseStats;
 
-        Sprite starterSprite = loader.GetPokemonSprite(baseStarter.Id);
+        Sprite starterSprite = dbLoader.GetPokemonSprite(baseStarter.Id);
         statsCanvas.SetPanel(baseStarter, starterSprite);
 
         game.onStatChange += statsCanvas.SetPokemonStatUI;

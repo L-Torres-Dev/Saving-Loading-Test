@@ -1,21 +1,21 @@
-﻿using System.IO;
-using UnityEngine;
+﻿using Assets.Scripts.SerializationScripts;
 
 namespace Assets.Scripts
 {
     public class Game
     {
         private Pokemon playerPokemon;
-
         public delegate void StatChange(Pokemon pokemon);
         public StatChange onStatChange;
+        private ISerializer serializer;
 
-        public Game()
+        public Game(ISerializer serializer)
         {
-            
+            this.serializer = serializer;
         }
-        public Game(Pokemon starter)
+        public Game(Pokemon starter, ISerializer serializer)
         {
+            this.serializer = serializer;
             playerPokemon = starter;
 
             BasePokemon basePokemon = starter.BaseStats;
@@ -35,22 +35,7 @@ namespace Assets.Scripts
 
         private void SavePokemon()
         {
-            BasePokemon basePokemon = playerPokemon.BaseStats;
-
-            UnityEngine.Debug.Log("Saving to: " + Application.persistentDataPath);
-
-            FileStream fileStream = File.Create(Application.persistentDataPath + "/gamestate.dat");
-            BinaryWriter writer = new BinaryWriter(fileStream);
-            writer.Write(basePokemon.Id);
-            writer.Write(basePokemon.Name);
-            writer.Write(playerPokemon.Health);
-            writer.Write(playerPokemon.Attack);
-            writer.Write(playerPokemon.Defense);
-            writer.Write(playerPokemon.SpecialAttack);
-            writer.Write(playerPokemon.SpecialDefense);
-            writer.Write(playerPokemon.Speed);
-            writer.Close();
-            fileStream.Close();
+            serializer.Save();
         }
 
         public void NotifyOfStatChange()
