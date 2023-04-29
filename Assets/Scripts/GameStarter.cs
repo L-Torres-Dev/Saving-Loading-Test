@@ -29,9 +29,9 @@ public class GameStarter : MonoBehaviour
 
     private void Start()
     {
-        chooser.onPokemonChosen += BeginNewGame;
         mainMenu.onContinue += LoadGame;
         mainMenu.onNewGame += NewGame;
+        chooser.onPokemonChosen += BeginNewGame;
     }
 
     private Pokemon InitObjectsFromData(DeserializedData data)
@@ -61,11 +61,7 @@ public class GameStarter : MonoBehaviour
         SetupStatsCanvas(pokemon, game);
     }
 
-    private void NewGame()
-    {
-        chooser.gameObject.SetActive(true);
-        chooser.GeneratePokemonPanels(allPokemon, dbLoader);
-    }
+    
 
     private void BeginNewGame(BasePokemon baseStarter)
     {
@@ -77,6 +73,12 @@ public class GameStarter : MonoBehaviour
         Game game = new Game(starter, new SimpleSerializer(starter));
         SetupStatsCanvas(starter, game);
 
+    }
+
+    private void NewGame()
+    {
+        chooser.gameObject.SetActive(true);
+        chooser.GeneratePokemonPanels(allPokemon, dbLoader);
     }
 
     private void SetupStatsCanvas(Pokemon starter, Game game)
