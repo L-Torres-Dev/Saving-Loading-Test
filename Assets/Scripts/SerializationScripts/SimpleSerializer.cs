@@ -14,6 +14,7 @@ namespace Assets.Scripts.SerializationScripts
 
         public void Save()
         {
+            Debug.Log("Simple Serializer Saving...");
             BasePokemon basePokemon = playerPokemon.BaseStats;
 
             FileStream fileStream = File.Create(Application.persistentDataPath + "/gamestate.dat");

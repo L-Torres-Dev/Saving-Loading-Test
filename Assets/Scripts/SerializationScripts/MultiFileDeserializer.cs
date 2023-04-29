@@ -10,7 +10,9 @@ namespace Assets.Scripts.SerializationScripts
 
         public bool FileExists()
         {
-            return Directory.Exists(multiDirectoryPath);
+            string[] files = Directory.GetFiles(multiDirectoryPath);
+
+            return files.Length > 0;
         }
 
         public DeserializedData Load()

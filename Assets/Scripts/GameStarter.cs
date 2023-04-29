@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 using Assets.Scripts;
 using System.Linq;
 using Assets.Scripts.SerializationScripts;
@@ -9,44 +8,30 @@ public class GameStarter : MonoBehaviour
 {
     [SerializeField] ChoosePokemon chooser;
     [SerializeField] StatsCanvas statsCanvas;
-    JsonPokemonLoader loader;
+    [SerializeField] MainMenu mainMenu;
+    JsonPokemonLoader dbLoader;
     List<BasePokemon> allPokemon;
 
-    
+    private IDeSerializer deserializer;
     void Awake()
     {
-        loader = new JsonPokemonLoader();
+        dbLoader = new JsonPokemonLoader();
         allPokemon = new List<BasePokemon>();
-        allPokemon = loader.LoadAllPokemon();
+        allPokemon = dbLoader.LoadAllPokemon();
 
-        string multiDirectoryPath = Application.persistentDataPath + "/saveFiles";
+        deserializer = new SimpleDeserializer();
 
-        IDeSerializer deserializer = new SimpleDeserializer();
-
-        if (!Directory.Exists(multiDirectoryPath))
+        if (!deserializer.FileExists())
         {
-            Directory.CreateDirectory(multiDirectoryPath);
-        }
-
-
-        if (deserializer.FileExists())
-        {
-            chooser.gameObject.SetActive(false);
-            DeserializedData data = deserializer.Load();
-            Pokemon pokemon = InitObjectsFromData(data);
-
-            LoadGame(pokemon);
-        }
-
-        else
-        {
-            chooser.GeneratePokemonPanels(allPokemon, loader);
+            mainMenu.DeactivateContinue();
         }
     }
 
     private void Start()
     {
-        chooser.onPokemonChosen += NewGame;
+        chooser.onPokemonChosen += BeginNewGame;
+        mainMenu.onContinue += LoadGame;
+        mainMenu.onNewGame += NewGame;
     }
 
     private Pokemon InitObjectsFromData(DeserializedData data)
@@ -65,8 +50,10 @@ public class GameStarter : MonoBehaviour
         return pokemon;
     }
 
-    private void LoadGame(Pokemon pokemon)
+    private void LoadGame()
     {
+        DeserializedData data = deserializer.Load();
+        Pokemon pokemon = InitObjectsFromData(data);
         statsCanvas.gameObject.SetActive(true);
 
         Game game = new Game(new SimpleSerializer(pokemon));
@@ -74,9 +61,15 @@ public class GameStarter : MonoBehaviour
         SetupStatsCanvas(pokemon, game);
     }
 
-    private void NewGame(BasePokemon baseStarter)
+    private void NewGame()
     {
-        chooser.onPokemonChosen -= NewGame;
+        chooser.gameObject.SetActive(true);
+        chooser.GeneratePokemonPanels(allPokemon, dbLoader);
+    }
+
+    private void BeginNewGame(BasePokemon baseStarter)
+    {
+        chooser.onPokemonChosen -= BeginNewGame;
 
         statsCanvas.gameObject.SetActive(true);
 
@@ -90,7 +83,7 @@ public class GameStarter : MonoBehaviour
     {
         BasePokemon baseStarter = starter.BaseStats;
 
-        Sprite starterSprite = loader.GetPokemonSprite(baseStarter.Id);
+        Sprite starterSprite = dbLoader.GetPokemonSprite(baseStarter.Id);
         statsCanvas.SetPanel(baseStarter, starterSprite);
 
         game.onStatChange += statsCanvas.SetPokemonStatUI;
